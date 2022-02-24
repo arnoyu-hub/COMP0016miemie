@@ -66,6 +66,10 @@ def nlp_manager(nlp_dictionary: dict) -> None:
         nlp_actions.run_LDA_IHE_MODULES()
      if nlp_dictionary.get("module_string_match"):
          nlp_actions.module_string_match()
+     if nlp_dictionary.get("ihe_module_string_match"):
+         nlp_actions.ihe_module_string_match()
+     if nlp_dictionary.get("ha_module_string_match"):
+         nlp_actions.ha_module_string_match()
      if nlp_dictionary.get("scopus_string_match_SDG"):
          nlp_actions.scopus_string_match_SDG()
      if nlp_dictionary.get("scopus_string_match_SDG_PUB"):

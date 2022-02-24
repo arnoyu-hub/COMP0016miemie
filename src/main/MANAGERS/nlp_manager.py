@@ -7,6 +7,8 @@ from main.NLP.LDA.ha_lda import HaLda
 from main.NLP.LDA.ha_modules_lda import HaModuleLda
 
 from main.NLP.STRING_MATCH.module_match import ModuleStringMatch
+from main.NLP.STRING_MATCH.ha_module_match import HAModuleStringMatch
+from main.NLP.STRING_MATCH.ihe_module_match import IHEModuleStringMatch
 
 
 from main.NLP.STRING_MATCH.scopus_match import ScopusStringMatch_SDG
@@ -80,7 +82,18 @@ class NLP_SECTION():
             Perform SDG string matching (keyword occurences) for modules
         """
         ModuleStringMatch().run()
-    
+        
+    def ha_module_string_match(self) -> None:
+        """
+            Perform SDG string matching (keyword occurences) for modules
+        """
+        HAModuleStringMatch().run()
+        
+    def ihe_module_string_match(self) -> None:
+        """
+            Perform SDG string matching (keyword occurences) for modules
+        """
+        IHEModuleStringMatch().run()
     def scopus_string_match_SDG(self) -> None:
         """
             Perform SDG string matching (keyword occurences) for publications

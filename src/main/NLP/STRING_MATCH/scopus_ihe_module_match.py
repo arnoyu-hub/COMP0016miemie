@@ -61,7 +61,7 @@ class ScopusStringMatch_IHEmodule():
         self.mongodb_pusher.matched_scopus(resulting_data) # push the processed data to MongoDB
         print()
         # Record the same data locally, acts as a backup
-        with open('main/NLP/STRING_MATCH/IHE_RESULTS/scopus_matches_modules.json', 'w') as outfile:
+        with open('main/NLP/STRING_MATCH/IHE_MODULE_RESULTS/scopus_matches_modules.json', 'w') as outfile:
             json.dump(resulting_data, outfile)
         
     def run(self):
