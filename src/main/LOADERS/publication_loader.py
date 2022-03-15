@@ -72,8 +72,8 @@ class PublicationLoader(Loader):
         """
             Loads publication SDG predictions for LDA from a serialised json file, if it exists, otherwise from MongoDB.
         """
-        if os.path.exists(self.lda_prediction_path):
-            with open(self.lda_prediction_path) as json_file:
+        if os.path.exists(self.lda_prediction_path_scopus):
+            with open(self.lda_prediction_path_scopus) as json_file:
                 data = json.load(json_file)
         else:
             client = pymongo.MongoClient(self.host, ssl_cert_reqs=ssl.CERT_NONE)

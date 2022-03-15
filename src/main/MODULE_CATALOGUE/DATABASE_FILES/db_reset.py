@@ -16,6 +16,6 @@ class Reset_ModuleData():
 
         myConnection = pyodbc.connect('DRIVER=' + self.driver + ';SERVER=' + self.server +';PORT=3306;DATABASE=' + self.database + ';UID=' + self.username + ';PWD=' + self.password)
         cur = myConnection.cursor()
-        cur.execute("DROP TABLE IF EXISTS ModuleData;")
+        cur.execute("DROP TABLE IF EXISTS moduledata;")
         myConnection.commit()
         myConnection.close()

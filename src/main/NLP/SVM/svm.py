@@ -30,6 +30,7 @@ class Svm():
         df = pd.read_csv(dataset, index_col=[0])
         df = df.drop(['index'], axis=1)
         self.dataset = df
+        
 
     def load_tags(self, tags) -> None:
         """

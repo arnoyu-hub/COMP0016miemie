@@ -12,6 +12,10 @@ def loader_manager(load_dictionary: dict) -> None:
         loader_actions.load_modules()
     if load_dictionary['publications']:
         loader_actions.load_publications()
+    if load_dictionary['modulesha']:
+        loader_actions.load_modules_ha()
+    if load_dictionary['publicationsha']:
+        loader_actions.load_publications_ha()
 
 def module_manager(module_dictionary: dict) -> None:
     """
@@ -54,60 +58,34 @@ def nlp_manager(nlp_dictionary: dict) -> None:
      nlp_actions = NLP_SECTION()
      if nlp_dictionary.get('run_LDA_SDG'):
          nlp_actions.run_LDA_SDG()
-     if nlp_dictionary.get('run_LDA_SDG_PUB'):
-         nlp_actions.run_LDA_SDG_PUB()
      if nlp_dictionary.get("run_LDA_IHE"):
          nlp_actions.run_LDA_IHE()
      if nlp_dictionary.get("run_LDA_HA"):
         nlp_actions.run_LDA_HA()
-     if nlp_dictionary.get("run_LDA_HA_MODULES"):
-        nlp_actions.run_LDA_HA_MODULES()
-     if nlp_dictionary.get("run_LDA_IHE_MODULES"):
-        nlp_actions.run_LDA_IHE_MODULES()
      if nlp_dictionary.get("module_string_match"):
          nlp_actions.module_string_match()
-     if nlp_dictionary.get("ihe_module_string_match"):
-         nlp_actions.ihe_module_string_match()
-     if nlp_dictionary.get("ha_module_string_match"):
-         nlp_actions.ha_module_string_match()
+     if nlp_dictionary.get("ha_string_match"):
+         nlp_actions.ha_string_match()
      if nlp_dictionary.get("scopus_string_match_SDG"):
          nlp_actions.scopus_string_match_SDG()
-     if nlp_dictionary.get("scopus_string_match_SDG_PUB"):
-         nlp_actions.scopus_string_match_SDG_PUB()
      if nlp_dictionary.get("scopus_string_match_IHE"):
          nlp_actions.scopus_string_match_IHE()
      if nlp_dictionary.get("scopus_string_match_HA"):
          nlp_actions.scopus_string_match_HA()   
-     if nlp_dictionary.get("scopus_string_match_HA_MODULE"):
-         nlp_actions.scopus_string_match_HA_MODULE()
-     if nlp_dictionary.get("scopus_string_match_IHE_MODULE"):
-         nlp_actions.scopus_string_match_IHE_MODULE()      
      if nlp_dictionary.get("predict_scopus_data"):
          nlp_actions.predictScopus()
      if nlp_dictionary.get("create_SDG_SVM_dataset"):
          nlp_actions.create_SDG_SVM_dataset(True, True)
-     if nlp_dictionary.get("create_SDG_SVM_PUB_dataset"):
-         nlp_actions.create_SDG_SVM_PUB_dataset(True, True)
      if nlp_dictionary.get("create_IHE_SVM_dataset"):
          nlp_actions.create_IHE_SVM_dataset()
-     if nlp_dictionary.get("create_IHE_SVM_MODULE_dataset"):
-         nlp_actions.create_IHE_SVM_MODULE_dataset()
      if nlp_dictionary.get("create_HA_SVM_dataset"):
-         nlp_actions.create_HA_SVM_dataset()
-     if nlp_dictionary.get("create_HA_SVM_MODULE_dataset"):
-         nlp_actions.create_HA_SVM_MODULE_dataset(True, True)
+         nlp_actions.create_HA_SVM_dataset(True, True)
      if nlp_dictionary.get("run_SVM_SDG"):
          nlp_actions.run_SVM_SDG()
-     if nlp_dictionary.get("run_SVM_SDG_PUB"):
-         nlp_actions.run_SVM_SDG_PUB()
      if nlp_dictionary.get("run_SVM_IHE"):
          nlp_actions.run_SVM_IHE()
-     if nlp_dictionary.get("run_SVM_IHE_MODULE"):
-         nlp_actions.run_SVM_IHE_MODULE()
      if nlp_dictionary.get("run_SVM_HA"):
          nlp_actions.run_SVM_HA()
-     if nlp_dictionary.get("run_SVM_HA_MODULE"):
-         nlp_actions.run_SVM_HA_MODULE()
      if nlp_dictionary.get("validate_sdg_svm"):
          nlp_actions.validate_SDG_SVM()
      if nlp_dictionary.get("validate_ha_svm"):
@@ -169,7 +147,10 @@ if __name__ == "__main__":
     }
     load_dictionary = {
         "publications": False,
-        "modules": False
+        "modules": False,
+        "publicationsha": False,
+        "modulesha": False
+        
     }
     scrape_pub = False
     module_dictionary = {

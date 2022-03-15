@@ -17,7 +17,7 @@ class Create_ModuleData():
         myConnection = pyodbc.connect('DRIVER=' + self.driver + ';SERVER=' + self.server + ';PORT=3306;DATABASE=' + self.database + ';UID=' + self.username + ';PWD=' + self.password)
         cur = myConnection.cursor()
 
-        create = """CREATE TABLE ModuleData(
+        create = """CREATE TABLE moduledata(
                         Department_Name      VARCHAR(150),
                         Department_ID        VARCHAR(150),
                         Module_Name          VARCHAR(150),

@@ -1,39 +1,27 @@
-from main.NLP.LDA.sdg_pub_lda import SdgPubLda
+
 from main.NLP.LDA.sdg_lda import SdgLda
-from main.NLP.LDA.ha_modules_lda import HaModuleLda
-from main.NLP.LDA.ihe_lda import IheLda
-from main.NLP.LDA.ihe_modules_lda import IheModuleLda
 from main.NLP.LDA.ha_lda import HaLda
-from main.NLP.LDA.ha_modules_lda import HaModuleLda
+from main.NLP.LDA.ihe_lda import IheLda
+
 
 from main.NLP.STRING_MATCH.module_match import ModuleStringMatch
-from main.NLP.STRING_MATCH.ha_module_match import HAModuleStringMatch
-from main.NLP.STRING_MATCH.ihe_module_match import IHEModuleStringMatch
+from main.NLP.STRING_MATCH.module_ha_match import ModuleStringMatchHA
 
 
 from main.NLP.STRING_MATCH.scopus_match import ScopusStringMatch_SDG
-from main.NLP.STRING_MATCH.scopus_sdg_match import ScopusStringMatch_SDG_Publications
 from main.NLP.STRING_MATCH.scopus_ihe_match import ScopusStringMatch_IHE
 from main.NLP.STRING_MATCH.scopus_ha_match import ScopusStringMatch_HA
-from main.NLP.STRING_MATCH.scopus_ha_module_match import ScopusStringMatch_HAmodule
-from main.NLP.STRING_MATCH.scopus_ihe_module_match import ScopusStringMatch_IHEmodule
 
 from main.NLP.LDA.predict_publication import ScopusPrediction
 from main.NLP.VALIDATION.validate_sdg_svm import ValidateSdgSvm
-from main.NLP.VALIDATION.validate_ha_svm import ValidateHaSvm
+from main.NLP.VALIDATION.validate_ha_svm import ValidateHASvm
 
 from main.NLP.SVM.sdg_svm_dataset import SdgSvmDataset
-from main.NLP.SVM.sdg_svm_pub_dataset import SdgSvmPubDataset
 from main.NLP.SVM.ihe_svm_dataset import IheSvmDataset
-from main.NLP.SVM.ihe_svm_module_dataset import IHESvmModuleDataset
-from main.NLP.SVM.ihe_svm_module import IheModuleSvm
 from main.NLP.SVM.ha_svm_dataset import HaSvmDataset
-from main.NLP.SVM.ha_svm_module_dataset import HASvmModuleDataset
 from main.NLP.SVM.sdg_svm import SdgSvm
-from main.NLP.SVM.sdg_svm_pub import SdgPubSvm
 from main.NLP.SVM.ihe_svm import IheSvm
 from main.NLP.SVM.ha_svm import HaSvm
-from main.NLP.SVM.ha_svm_module import HaModuleSvm
 
 from main.NLP.parser_sdg_to_csv.sdg_csv import SDG_CSV_RESULTS
 from main.NLP.parser_sdg_to_csv.sdg_csv2 import SDG_CSV_RESULTS2
@@ -47,35 +35,18 @@ class NLP_SECTION():
         """
         SdgLda().run()
     
-    def run_LDA_SDG_PUB(self) -> None:
-        """
-            Runs LDA model training for Module SDG classification
-        """
-        SdgPubLda().run()
-    
     def run_LDA_IHE(self) -> None:
         """
             Runs LDA model training for Publication IHE classification
         """
         IheLda().run()
     
-    def run_LDA_IHE_MODULES(self) -> None:
-        """
-            Runs LDA model training for Publication IHE classification
-        """
-        IheModuleLda().run()
-
-    def run_LDA_HA(self) -> None:
-        """
-            Runs LDA model training for Publication HA classification
-        """
-        HaLda().run()
     
-    def run_LDA_HA_MODULES(self) -> None:
+    def run_LDA_HA(self) -> None:
         """
             Runs LDA model training for Publication HA MODULES classification
         """
-        HaModuleLda().run()
+        HaLda().run()
         
     def module_string_match(self) -> None:
         """
@@ -83,28 +54,18 @@ class NLP_SECTION():
         """
         ModuleStringMatch().run()
         
-    def ha_module_string_match(self) -> None:
+    def ha_string_match(self) -> None:
         """
             Perform SDG string matching (keyword occurences) for modules
         """
-        HAModuleStringMatch().run()
+        ModuleStringMatchHA().run()
         
-    def ihe_module_string_match(self) -> None:
-        """
-            Perform SDG string matching (keyword occurences) for modules
-        """
-        IHEModuleStringMatch().run()
     def scopus_string_match_SDG(self) -> None:
         """
             Perform SDG string matching (keyword occurences) for publications
         """
         ScopusStringMatch_SDG().run()
     
-    def scopus_string_match_SDG_PUB(self) -> None:
-        """
-            Perform SDG string matching (keyword occurences) for publications
-        """
-        ScopusStringMatch_SDG_Publications().run()
     
     def scopus_string_match_IHE(self) -> None:
         """
@@ -114,21 +75,10 @@ class NLP_SECTION():
         
     def scopus_string_match_HA(self) -> None:
         """
-            Perform HA string matching (keyword occurences) for publications
+            Perform HA MODULES string matching (keyword occurences) for publications
         """
         ScopusStringMatch_HA().run()
     
-    def scopus_string_match_HA_MODULE(self) -> None:
-        """
-            Perform HA MODULES string matching (keyword occurences) for publications
-        """
-        ScopusStringMatch_HAmodule().run()
-    
-    def scopus_string_match_IHE_MODULE(self) -> None:
-        """
-            Perform HA MODULES string matching (keyword occurences) for publications
-        """
-        ScopusStringMatch_IHEmodule().run()
         
     def predictScopus(self) -> None:
         """
@@ -146,7 +96,7 @@ class NLP_SECTION():
         """
            Validate HA model results for SDG mapping against string matching 
         """
-        ValidateHaSvm().run()
+        ValidateHASvm().run()
     
     def create_SDG_SVM_dataset(self, modules: bool, publications: bool) -> None:
         """
@@ -154,12 +104,6 @@ class NLP_SECTION():
         """
         SdgSvmDataset().run(modules, publications)
     
-    def create_SDG_SVM_PUB_dataset(self, modules: bool, publications: bool) -> None:
-        """
-            Creates the dataset needed to run SDG validation on Svm model predictions
-        """
-        SdgSvmPubDataset().run()
-
     
     def run_SVM_SDG(self) -> None:
         """
@@ -167,11 +111,6 @@ class NLP_SECTION():
         """
         SdgSvm().run()
     
-    def run_SVM_SDG_PUB(self) -> None:
-        """
-            Runs SVM model training for Modules & Publications SDG classification
-        """
-        SdgPubSvm().run()
 
     def create_IHE_SVM_dataset(self) -> None:
         """
@@ -184,42 +123,18 @@ class NLP_SECTION():
             Runs SVM model training for Modules & Publications SDG classification
         """
         IheSvm().run()
-
-    def create_IHE_SVM_MODULE_dataset(self) -> None:
+    
+    def create_HA_SVM_dataset(self, modules: bool, publications: bool) -> None:
         """
             Runs SVM model training for Modules & Publications SDG classification
         """
-        IHESvmModuleDataset().run()
-
-    def run_SVM_IHE_MODULE(self) -> None:
-        """
-            Runs SVM model training for Modules & Publications SDG classification
-        """
-        IheModuleSvm().run()
-        
-    def create_HA_SVM_dataset(self) -> None:
-        """
-            Runs SVM model training for Modules & Publications SDG classification
-        """
-        HaSvmDataset().run()
+        HaSvmDataset().run(modules, publications)
 
     def run_SVM_HA(self) -> None:
         """
             Runs SVM model training for Modules & Publications SDG classification
         """
         HaSvm().run()
-    
-    def create_HA_SVM_MODULE_dataset(self, modules: bool, publications: bool) -> None:
-        """
-            Runs SVM model training for Modules & Publications SDG classification
-        """
-        HASvmModuleDataset().run(modules, publications)
-
-    def run_SVM_HA_MODULE(self) -> None:
-        """
-            Runs SVM model training for Modules & Publications SDG classification
-        """
-        HaModuleSvm().run()
         
     def run_SDG_TO_CSV(self) -> None:
         """
