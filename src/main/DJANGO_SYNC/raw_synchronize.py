@@ -42,7 +42,7 @@ class RawSynchronizer():
 
         myConnection = pyodbc.connect('DRIVER=' + self.driver + ';SERVER=' + self.server + ';PORT=3306;DATABASE=' + self.database + ';UID=' + self.username + ';PWD=' + self.password)
         curr = myConnection.cursor()
-        curr.execute("SELECT * FROM [dbo].[ModuleData]")
+        curr.execute("SELECT * FROM moduledata")
         return curr.fetchall()
 
     def __update_module_from_mysql(self) -> None:
@@ -57,6 +57,8 @@ class RawSynchronizer():
         for i in data:
             self.__progress(c, len(data), "Syncing scraped modules to Django")
             query = """INSERT INTO public.app_module (Department_Name,Department_ID,Module_Name,Module_ID,Faculty,Credit_Value,Module_Lead,Catalogue_Link,Description)
+                       VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}') ON CONFLICT (Module_ID) DO NOTHING""".format(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8])
+            query2 = """INSERT INTO public.app_moduleha (Department_Name,Department_ID,Module_Name,Module_ID,Faculty,Credit_Value,Module_Lead,Catalogue_Link,Description)
                        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}') ON CONFLICT (Module_ID) DO NOTHING""".format(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8])
             con.commit()
             c += 1
@@ -96,7 +98,28 @@ class RawSynchronizer():
             'IHE_Prediction': '',
             'SVM_Prediction': ''
         }
-
+        
+        blank_dict2 = {
+            '1': '', '2': '', '3': '', '4': '', '5': '', '6': '',
+            '7': '', '8': '', '9': '', '10': '', '11': '', '12': '',
+            '13': '', '14': '', '15': '', '16': '', '17': '', '18': '',
+            'DOI': '',
+            'IHE': [],
+            'SVM': [],
+            'Title': '',
+            'Validation': {
+                'ColorRed': 0, 'ColorBlue': 0, 'ColorGreen': 0, 'Similarity': 0,
+                'StringCount': [['1', 0.0], ['2', 0.0], ['3', 0.0], ['4', 0.0], ['5', 0.0], ['6', 0.0],
+                    ['7', 0.0], ['8', 0.0], ['9', 0.0], ['10', 0.0], ['11', 0.0], ['12', 0.0],
+                    ['13', 0.0], ['14', 0.0], ['15', 0.0], ['16', 0.0], ['17', 0.0], ['18', 0.0]],
+                'HA_Keyword_Counts': []
+                },
+            'ModelResult': '',
+            'StringResult': '',
+            'IHE_Prediction': '',
+            'SVM_Prediction': ''
+        }
+        
         c, l = 0, 90000
         for i in data:
             self.__progress(c, l, "Syncing scraped publications to Django")
@@ -125,8 +148,10 @@ class RawSynchronizer():
                     for index, val in enumerate(i['AuthorKeywords']):
                         i['AuthorKeywords'][index] = val.replace("\'", "\'\'")
                 #query = """INSERT INTO public.app_publication (title, data, \"assignedSDG\", doi) SELECT '{0}', '{1}', '{2}', '{3}'  WHERE NOT EXISTS (SELECT 1 FROM public.app_publication WHERE doi='{3}')""".format(title, json.dumps(i), json.dumps(blank_dict), doi)
-                query = """INSERT INTO public.app_publication (title, data, \"assignedSDG\", doi) VALUES ('{0}', '{1}', '{2}', '{3}') ON CONFLICT (id) DO NOTHING""".format(title, json.dumps(i), json.dumps(blank_dict), doi)
+                query = """INSERT INTO public.app_publication (title, data, \"assignedSDG\", doi) VALUES ('{0}', '{1}', '{2}', '{3}') ON CONFLICT (id) DO NOTHING""".format(title, json.dumps(i), json.dumps(blank_dict),doi)
+                query2 = """INSERT INTO public.app_publicationha (title, data, \"assignedHA\", doi) VALUES ('{0}', '{1}', '{2}', '{3}') ON CONFLICT (doi) DO NOTHING""".format(title, json.dumps(i), json.dumps(blank_dict2),doi)
                 cur.execute(query)
+                #cur.execute(query2)#id
                 con.commit()
             c += 1
         print()
@@ -134,5 +159,5 @@ class RawSynchronizer():
         con.close()
 
     def run(self):
-        # self.__update_module_from_mysql()
+        #self.__update_module_from_mysql()
         self.__update_publications_from_mongo()

@@ -1,3 +1,4 @@
+from numpy import half
 from main.NLP.PREPROCESSING.preprocessor import Preprocessor
 from main.CONFIG_READER.read import get_details
 
@@ -15,6 +16,7 @@ lda_sdg_threshold = 30
 lda_sdg_threshold_modules = 25
 svm_threshold = 30
 lda_ihe_threshold = 20
+lda_ha_threshold = 30
 
 class Synchronizer():
     
@@ -56,6 +58,21 @@ class Synchronizer():
             result[publication['DOI']] = publication
         return result
     
+    def __getHAPublicationPrediction(self, limit:int = None) -> dict:
+        """
+            Gets the predictions of publications from MongoDB
+        """
+
+        db = self.client.Scopus
+        col = db.HAPublicationPrediction
+        data = col.find().limit(limit)
+        # Process mongodb response to a workable dictionary format.
+        result = {}
+        for publication in data:
+            del publication['_id']
+            result[publication['DOI']] = publication
+        return result
+    
     def __getSvmSdgPredictions(self, limit: int = None) -> dict:
         """
             Gets SVM SDG predictions from MongoDB
@@ -63,6 +80,20 @@ class Synchronizer():
 
         db = self.client.Scopus
         col = db.SvmSdgPredictions
+        data = col.find().limit(limit)
+        # Process mongodb response to a workable dictionary format.
+        # i = json.loads(json_util.dumps(data))
+        # return i
+        del data[0]['_id']
+        return data[0]
+
+    def __getSvmHaPredictions(self, limit: int = None) -> dict:
+        """
+            Gets SVM HA predictions from MongoDB
+        """
+
+        db = self.client.Scopus
+        col = db.SvmHaPredictions
         data = col.find().limit(limit)
         # Process mongodb response to a workable dictionary format.
         # i = json.loads(json_util.dumps(data))
@@ -81,6 +112,17 @@ class Synchronizer():
         del data[0]['_id']
         return data[0]
 
+    def __getScopusHAValidation(self, limit: int = None) -> dict:
+        """
+            Gets Scopus validation data from MongoDB
+        """
+
+        db = self.client.Scopus
+        col = db.HAScopusValidation
+        data = col.find().limit(limit)
+        del data[0]['_id']
+        return data[0]
+
     def __getIHEPrediction(self, limit: int = None) -> dict:
         """
             Gets IHE predictions from MongoDB
@@ -89,14 +131,14 @@ class Synchronizer():
         db = self.client.Scopus
         col = db.IHEPrediction
         data = col.find().limit(limit)
-        
         result = {}
-        
-        for i in data:
-            del i['_id']
-            if 'DOI' in i.keys():
+        try:
+            for i in data:
+                del i['_id']
                 result[i['DOI']] = i
-        return result
+            return result
+        except KeyError as e:
+            pass
 
     def __getModulePrediction(self, limit: int = None) -> dict:
         """
@@ -120,20 +162,53 @@ class Synchronizer():
         del data[0]['_id']
         return data[0]
 
-    def __acquireData(self, pubPred: bool, svmSdgPred: bool, scopVal: bool, ihePred: bool, modPred: bool, modVal: bool, limit: int) -> Tuple[dict, dict, dict, dict, dict, dict]:
+    def __getHAModulePrediction(self, limit: int = None) -> dict:
+        """
+            Gets ha module predictions from MongoDB
+        """
+
+        db = self.client.Scopus
+        col = db.HAModulePrediction
+        data = col.find().limit(limit)
+        del data[0]['_id']
+        return data[0]
+
+    def __getHAModuleValidation(self, limit: int = None) -> dict:
+        """
+            Gets ha module validation data from MongoDB
+        """
+
+        db = self.client.Scopus
+        col = db.HAModuleValidation
+        data = col.find().limit(limit)
+        del data[0]['_id']
+        return data[0]
+
+    def __acquireData(self, pubPred: bool, svmSdgPred: bool, scopVal: bool, ihePred: bool, modPred: bool, modVal: bool, scopHaVal, hamodPred, hamodVal,svmHaPred, hapubPred, limit: int) -> Tuple[dict, dict, dict, dict, dict, dict,dict,dict,dict,dict,dict]:
         """
             Controller for getting and returning required data for a synchronisation
         """
         
         scopusPrediction_path = "PublicationPrediction"
         svm_sdg_predictions_path = "SvmSdgPredictions"
+        svm_ha_predictions_path = "SvmHaPredictions"
         scopusValidationSDG_path = "ScopusValidation"
+        scopusValidationHA_path = "ScopusHAValidation"
         iheScopusPrediction_path = "IHEPrediction"
-        data_, svm_predictions, scopusValidation, ihePrediction, module_predictions, module_val = [], [], [], [], [], []
+        data_, svm_predictions, scopusValidation, ihePrediction, module_predictions, module_val,scopusHAValidation,svm_ha_predictions, ha_module_predictions,ha_module_val,hadata_= [], [], [], [], [], [], [], [], [], [],[]
 
+        if hapubPred:
+            hadata_ = self.__getHAPublicationPrediction(limit)
+            print("Acquired scopus predictions")
         if pubPred:
             data_ = self.__getPublicationPrediction(limit)
             print("Acquired scopus predictions")
+        if svmHaPred:
+            svm_ha_predictions = self.__getSvmHaPredictions(limit)
+            print("Acquired svm ha predictions")
+        if scopHaVal:
+            scopusHAValidation = self.__getScopusHAValidation(limit)
+            print("Acquired scopus validation")
         if svmSdgPred:
             svm_predictions = self.__getSvmSdgPredictions(limit)
             print("Acquired svm sdg predictions")
@@ -149,8 +224,14 @@ class Synchronizer():
         if modVal:
             module_val = self.__getModuleValidation(limit)
             print("Acquired module validation")
+        if hamodPred:
+            ha_module_predictions = self.__getHAModulePrediction(limit)
+            print("Acquired module predictions")
+        if hamodVal:
+            ha_module_val = self.__getHAModuleValidation(limit)
+            print("Acquired module validation")
 
-        return data_, svm_predictions, scopusValidation, ihePrediction, module_predictions, module_val
+        return data_, svm_predictions, scopusValidation, ihePrediction, module_predictions, module_val, svm_ha_predictions, scopusHAValidation, ha_module_predictions, ha_module_val,hadata_
 
     def __pseudocolor(self, val: float, minval: int, maxval: int) -> Tuple[int, int, int]:
         """
@@ -175,17 +256,26 @@ class Synchronizer():
         result = [0]*18
         sum_ = sum(lst)
         for i in range(len(lst)):
-            result[i] = (str(i+1), (lst[i] / sum_) * 100) if sum_ != 0 else (str(i+1), 0.0)
+            result.append((str(i+1), (lst[i] / sum_) * 100) if sum_ != 0 else (str(i+1), 0.0))
         return result
 
     def __getPublication_validation(self, data_: dict, publication: dict) -> dict:
         """
             Gets the validation similarity data for a publication
         """
-
         similarityRGB = data_[publication]['Similarity']
         data_[publication]['ColorRed'], data_[publication]['ColorGreen'], data_[publication]['ColorBlue'] = self.__pseudocolor(similarityRGB*100, 0, 100)
         data_[publication]['StringCount'] = self.__normalise(data_[publication]['SDG_Keyword_Counts'])
+        return data_[publication]
+        
+    def __getPublicationHA_validation(self, data_: dict, publication: dict) -> dict:
+        """
+            Gets the validation similarity data for a publication
+        """
+
+        similarityRGB = data_[publication]['Similarity']
+        data_[publication]['ColorRed'], data_[publication]['ColorGreen'], data_[publication]['ColorBlue'] = self.__pseudocolor(similarityRGB*100, 0, 100)
+        data_[publication]['StringCount'] = self.__normalise(data_[publication]['HA_Keyword_Counts'])
         return data_[publication]
 
     def __getThreshold(self, result: list, threshold: int) -> list:
@@ -268,12 +358,77 @@ class Synchronizer():
         con.close()
         return result[0]
 
+    # def __thresholdAnalyseHA(self, lst: list, threshold: int) -> list:
+    #     """
+    #         Checks which items are above the threshold by weight
+    #     """
+
+    #     validWeights = []
+    #     p = sorted(lst, key=lambda x: x[1])
+    #     for ha, weight in p:
+    #         if weight >= threshold:
+    #             validWeights.append(ha)
+    #     return validWeights
+
+    def __getPostgres_modulesHA(self, title: str) -> list:
+        """
+            Gets all data about a module from the PostrgeSQL database
+        """
+
+        con = psycopg2.connect(database=self.postgre_database, user=self.postgre_user, host=self.postgre_host, password=self.postgre_password, port=self.postgre_port)
+        cur = con.cursor()
+        cur.execute("""select id, title, data, "assignedHA" from public."app_publication" where title = '""" + title.replace("'", "''") + "'")
+        result = cur.fetchall()
+        con.close()
+        return result[0]
+
+    def __retrieve_postgres_data_publications_ha(self, title: str) -> list:
+        """
+            Gets all data about a publication from the PostrgeSQL database
+        """
+
+        con = psycopg2.connect(database=self.postgre_database, user=self.postgre_user, host=self.postgre_host, password=self.postgre_password, port=self.postgre_port)
+        cur = con.cursor()
+
+        cur.execute(
+            'SELECT "data", "assignedHA" FROM public.app_publicationha WHERE title = \'' + title.replace("'", "''") + '\''
+        )
+        result = cur.fetchall()
+        cur.close()
+        return result
+
+    def __update_postgres_data_publications_ha(self, data_ha: dict, title: str) -> None:
+        """
+            Updates assignedHA column for a given publication in the PostgreSQL database
+        """
+
+        con = psycopg2.connect(database=self.postgre_database, user=self.postgre_user, host=self.postgre_host, password=self.postgre_password, port=self.postgre_port)
+        cur = con.cursor()
+        
+        cur.execute(
+            'UPDATE public.app_publicationha SET \"assignedHA\" = \'{}\' WHERE title = \'{}\''.format(json.dumps(data_ha).replace("'", "''"), title.replace("'", "''"))
+        )
+        con.commit()
+        cur.close()
+
+    def __update_postgres_data_modules_ha(self, data_sdg: dict, module_id: str) -> None:
+        """
+            Updates fullName column for a given module in the PostgreSQL database
+        """
+
+        con = psycopg2.connect(database=self.postgre_database, user=self.postgre_user, host=self.postgre_host, password=self.postgre_password, port=self.postgre_port)
+        cur = con.cursor()
+        cur.execute(
+            'UPDATE public.app_moduleha SET "assignedHA" = \'{}\' WHERE "Module_ID" = \'{}\''.format(json.dumps(data_sdg), module_id))
+        con.commit()
+        cur.close()
+
     def __retrieve_postgres_data_publications(self, title: str) -> list:
         """
             Gets all data about a publication from the PostrgeSQL database
         """
 
-        con = psycopg2.connect(database=self.postgre_database, user=self.postgre_user, host=self.postgre_host, password=self.postgre_password, port=self.postgre_host)
+        con = psycopg2.connect(database=self.postgre_database, user=self.postgre_user, host=self.postgre_host, password=self.postgre_password, port=self.postgre_port)
         cur = con.cursor()
 
         cur.execute(
@@ -283,12 +438,55 @@ class Synchronizer():
         cur.close()
         return result
 
+    def __loadHA_Data_PUBLICATION(self, limit: int) -> None:
+        """
+            Gets all the necessary HA data about publications and their predictions to process for updating the PostgreSQL database
+        """
+
+        data_, svm_predictions, scopusValidation, ihePrediction, module_predictions, module_validation, svm_ha_predictions, scopusHAValidation, ha_module_predictions, ha_module_val,hadata_= self.__acquireData(False, False, False, False, False, False, True, True,False,False,True, limit)
+        count = 1
+        l = len(hadata_)
+        print()
+
+        for i in hadata_:
+            try:
+                self.__progress(count, l, "syncing Publications HA with Django")
+                count += 1
+                publication_data = self.__retrieve_postgres_data_publications_ha(hadata_[i]['Title'])[0][1]
+                calc_highest = []
+                for j in range(18):
+                    try:
+                        weight = float(i[str(j)]) * 100
+                        weight = round(weight, 2)
+                        calc_highest.append((str(j), weight))
+                    except:
+                        pass
+                p = sorted(calc_highest, key=lambda x: x[1])
+                validWeights = []
+                for ha, weight in p:
+                    if weight >= lda_ha_threshold:
+                        validWeights.append(ha)
+
+                publication_data['DOI'] = i
+                publication_data["Validation"] = self.__getPublicationHA_validation(scopusHAValidation, i)
+                publication_data['ModelResult'] = ",".join(validWeights)
+                publication_data['SVM'], publication_data['SVM_Prediction'] = self.__getSVM_predictions(svm_ha_predictions['Publication'], i)
+
+                if publication_data["Validation"]['HA_Keyword_Counts']:
+                    normalised = self.__normalise(publication_data["Validation"]['HA_Keyword_Counts'])
+                    publication_data['StringResult'] = ",".join(self.__thresholdAnalyse(normalised, threshold=lda_ha_threshold))
+
+                    self.__update_postgres_data_publications_ha(publication_data, hadata_[i]['Title'])
+            except:
+                pass
+        print()
+
     def __update_postgres_data_publications(self, data_sdg: dict, title: str) -> None:
         """
             Updates assignedSDG column for a given publication in the PostgreSQL database
         """
 
-        con = psycopg2.connect(database=self.postgre_database, user=self.postgre_user, host=self.postgre_host, password=self.postgre_password, port=self.postgre_host)
+        con = psycopg2.connect(database=self.postgre_database, user=self.postgre_user, host=self.postgre_host, password=self.postgre_password, port=self.postgre_port)
         cur = con.cursor()
         
         cur.execute(
@@ -314,40 +512,41 @@ class Synchronizer():
             Gets all the necessary SDG data about publications and their predictions to process for updating the PostgreSQL database
         """
 
-        data_, svm_predictions, scopusValidation, ihePrediction, module_predictions, module_validation = self.__acquireData(True, True, True, True, False, False, limit)
+        data_, svm_predictions, scopusValidation, ihePrediction, module_predictions, module_validation, svm_ha_predictions, scopusHAValidation , ha_module_predictions, ha_module_val,hadata_ = self.__acquireData(True, True, True, True, False, False, True, True, False,False, False,limit)
         count = 1
         l = len(data_)
         print()
-
         for i in data_:
-            self.__progress(count, l, "syncing Publications SDG with Django")
-            count += 1
-            publication_data = self.__retrieve_postgres_data_publications(data_[i]['Title'])[0][1]
-            calc_highest = []
-            for j in range(18):
-                try:
-                    weight = float(i[str(j)]) * 100
-                    weight = round(weight, 2)
-                    calc_highest.append((str(j), weight))
-                except:
+            try:
+                    self.__progress(count, l, "syncing Publications SDG with Django")
+                    count += 1
+                    publication_data = self.__retrieve_postgres_data_publications(data_[i]['Title'])[0][1]
+                    calc_highest = []
+                    for j in range(18):
+                        try:
+                            weight = float(i[str(j)]) * 100
+                            weight = round(weight, 2)
+                            calc_highest.append((str(j), weight))
+                        except:
+                            pass
+                    p = sorted(calc_highest, key=lambda x: x[1])
+                    validWeights = []
+                    for sdg, weight in p:
+                        if weight >= lda_sdg_threshold:
+                            validWeights.append(sdg)
+                    
+                        publication_data['DOI'] = i
+                        publication_data["Validation"] = self.__getPublication_validation(scopusValidation, i)
+                        publication_data['ModelResult'] = ",".join(validWeights)
+                        publication_data['SVM'], publication_data['SVM_Prediction'] = self.__getSVM_predictions(svm_predictions['Publication'], i)
+
+                        if publication_data["Validation"]['SDG_Keyword_Counts']:
+                            normalised = self.__normalise(publication_data["Validation"]['SDG_Keyword_Counts'])
+                            publication_data['StringResult'] = ",".join(self.__thresholdAnalyse(normalised, threshold=lda_sdg_threshold))
+
+                            self.__update_postgres_data_publications(publication_data, data_[i]['Title'])
+            except:
                     pass
-
-            p = sorted(calc_highest, key=lambda x: x[1])
-            validWeights = []
-            for sdg, weight in p:
-                if weight >= lda_sdg_threshold:
-                    validWeights.append(sdg)
-
-            publication_data['DOI'] = i
-            publication_data["Validation"] = self.__getPublication_validation(scopusValidation, i)
-            publication_data['ModelResult'] = ",".join(validWeights)
-            publication_data['SVM'], publication_data['SVM_Prediction'] = self.__getSVM_predictions(svm_predictions['Publication'], i)
-
-            if publication_data["Validation"]['SDG_Keyword_Counts']:
-                normalised = self.__normalise(publication_data["Validation"]['SDG_Keyword_Counts'])
-                publication_data['StringResult'] = ",".join(self.__thresholdAnalyse(normalised, threshold=lda_sdg_threshold))
-
-                self.__update_postgres_data_publications(publication_data, data_[i]['Title'])
         print()
     
     def __stringmatch_approach(self, keywords: list, paper: dict) -> str:
@@ -444,6 +643,8 @@ class Synchronizer():
         print()
         return r
 
+
+
     def __update_postgre_many(self, data: list, titles: list) -> None:
         """
             Updates assignedSDG for many publications to the PostgreSQL database
@@ -460,6 +661,7 @@ class Synchronizer():
 
         con.commit()
         cur.close()
+
 
     def __getAllPubs(self, limit: int = None) -> dict:
         """
@@ -481,7 +683,7 @@ class Synchronizer():
             Gets all the necessary IHE data about publications and their predictions to process for updating the PostgreSQL database
         """
 
-        data_, svm_predictions_SDG, scopusValidation, ihePrediction, module_predictions, module_validation = self.__acquireData(False, False, False, True, False, False, limit)
+        data_, svm_predictions_SDG, scopusValidation, ihePrediction, module_predictions, module_validation, svm_ha_predictions, scopusHAValidation, ha_module_predictions, ha_module_val,hadata_ = self.__acquireData(False, False, False, True, False, False, False, False, False,False,False, limit)
         
         ihe_approach_keywords = self.preprocessor.preprocess_keywords("main/IHE_KEYWORDS/approaches.csv")
         ihe_speciality_max = len(pd.read_csv('main/IHE_KEYWORDS/lda_speciality_keywords.csv', nrows=0).columns.tolist())
@@ -520,12 +722,52 @@ class Synchronizer():
             self.__update_postgre_many(publication_data_list, publication_data_titles)
         print()
 
+    def __loadHA_Data_MODULES(self, limit: int) -> None:
+        """
+            Gets all the necessary HA data about modules and their predictions to process for updating the PostgreSQL database
+        """
+
+        data_, svm_predictions_SDG, scopusValidation, ihePrediction, module_predictions, module_validation, svm_ha_predictions, scopusHAValidation, ha_module_predictions, ha_module_val,hadata_ = self.__acquireData(False, False, False, False, False, False, True, False, True,True,False, limit)
+
+        count, l = 1, len(ha_module_predictions['Document Topics'])
+        print()
+
+        for module in ha_module_predictions['Document Topics']:
+            if module in ha_module_val:
+                self.__progress(count, l, "syncing Module HA with Django")
+                weights = ha_module_predictions['Document Topics'][module]
+                module_HA_assignments = {}
+                module_HA_assignments["Module_ID"] = module
+
+                similarityRGB = ha_module_val[module]['Similarity']
+                ha_module_val[module]['ColorRed'], ha_module_val[module]['ColorGreen'], ha_module_val[module]['ColorBlue'] = self.__pseudocolor(similarityRGB*100, 0, 100)
+                ha_module_val[module]['StringCount'] = self.__normalise(ha_module_val[module]['HA_Keyword_Counts'])
+
+                module_HA_assignments["Validation"] = ha_module_val[module]
+                
+                w = []
+                for i in range(len(weights)):
+                    weights[i] = weights[i].replace('(', '').replace(')', '').replace('%', '').replace(' ', '').split(',')
+                    haNum = weights[i][0]
+                    module_HA_assignments[haNum] = float(weights[i][1])
+                    w.append((haNum, float(weights[i][1])))
+
+                if module_HA_assignments["Validation"]:
+                    module_HA_assignments['ModelResult'] = ",".join(self.__thresholdAnalyse(w, threshold=lda_sdg_threshold_modules))
+                    normalised = self.__normalise(module_HA_assignments["Validation"]['HA_Keyword_Counts'])
+                    module_HA_assignments['StringResult'] = ",".join(self.__thresholdAnalyse(normalised, threshold=lda_sdg_threshold_modules))
+                    module_HA_assignments['SVM'], module_HA_assignments['SVM_Prediction'] = self.__getSVM_predictions(svm_ha_predictions['Module'], module)
+
+                    self.__update_postgres_data_modules_ha(module_HA_assignments, module)
+                count += 1
+        print()
+
     def __loadSDG_Data_MODULES(self, limit: int) -> None:
         """
             Gets all the necessary SDG data about modules and their predictions to process for updating the PostgreSQL database
         """
 
-        data_, svm_predictions, scopusValidation, ihePrediction, module_predictions, module_validation = self.__acquireData(False, True, False, False, True, True, limit)
+        data_, svm_predictions, scopusValidation, ihePrediction, module_predictions, module_validation, svm_ha_predictions, scopusHAValidation ,ha_module_predictions, ha_module_val,hadata_= self.__acquireData(False, True, False, False, True, True, False, False, False,False,False, limit)
         count, l = 1, len(module_predictions['Document Topics'])
         print()
 
@@ -604,9 +846,11 @@ class Synchronizer():
     def run(self, limit):
         limit = 0
 
-        # self.__update_columns()
-        # self.__loadSDG_Data_PUBLICATION(limit)
-        # self.__loadSDG_Data_MODULES(limit)
+        #self.__update_columns()
+        #self.__loadSDG_Data_PUBLICATION(limit)
+        #self.__loadSDG_Data_MODULES(limit)
+        #self.__loadHA_Data_PUBLICATION(limit)
+        #self.__loadHA_Data_MODULES(limit)
         self.__load_IHE_Data(limit)
 
         self.client.close()
