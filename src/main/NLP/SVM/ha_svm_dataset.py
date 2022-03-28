@@ -28,7 +28,7 @@ class HaSvmDataset():
         self.module_preprocessor = ModuleCataloguePreprocessor()
         self.publication_preprocessor = Preprocessor()
         self.svm_dataset = "main/NLP/SVM/SVM_dataset_ha.pkl"
-        self.num_has = 19
+        self.num_has = 20
         self.df_modules = self.module_loader.load("MAX") # dataframe with columns {Module_ID, Description}.
         self.df_publications = self.publication_loader.load("MAX") # dataframe with columns {DOI, Title, Description}.
 
@@ -86,17 +86,17 @@ class HaSvmDataset():
                     w = 0.0
                 weights.append((ha_num, w))
 
-            ha_weight_max = max(weights, key=lambda x: x[1]) # get tuple (sdg, weight) with the maximum weight.
+            ha_weight_max = max(weights, key=lambda x: x[1]) # get tuple (HA, weight) with the maximum weight.
             
             description = self.get_module_description(module_id)
             description = "" if description is None else self.module_preprocessor.preprocess(description)
 
             if description != "":
                 if ha_weight_max[1] >= self.threshold:
-                    # Set SDG tag of module to the SDG which has the maximum weight if its greater than the threshold value.
+                    # Set HA tag of module to the HA which has the maximum weight if its greater than the threshold value.
                     row_df = pd.DataFrame([[module_id, description, ha_weight_max[0]]], columns=results.columns)
                 else:
-                    # Set SDG tag of module to None if the maximum weight is less than the threshold value.
+                    # Set HA tag of module to None if the maximum weight is less than the threshold value.
                     row_df = pd.DataFrame([[module_id, description, None]], columns=results.columns)
                 
                 results = results.append(row_df, verify_integrity=True, ignore_index=True)
@@ -107,7 +107,7 @@ class HaSvmDataset():
 
     def tag_publications(self) -> pd.DataFrame:
         """
-            Returns a dataframe with columns {ID, Description, SDG} for each publication, where SDG is a class tag for training the SVM.
+            Returns a dataframe with columns {ID, Description, HA} for each publication, where HA is a class tag for training the SVM.
         """
         results = pd.DataFrame(columns=['ID', 'Description', 'HA']) # ID = DOI
         data = self.publication_loader.load_lda_prediction_results() # loads data from the PublicationPrediction table in mongodb.
@@ -129,7 +129,7 @@ class HaSvmDataset():
                 weights[i] = w
 
             weights = np.asarray(weights)
-            ha_max = weights.argmax() + 1 # gets SDG corresponding to the maximum weight.
+            ha_max = weights.argmax() + 1 # gets HA corresponding to the maximum weight.
             ha_weight_max = weights[ha_max - 1] # gets the maximum weight.
 
             description = self.get_publication_description(doi)
@@ -137,10 +137,10 @@ class HaSvmDataset():
 
             if description != "":
                 if ha_weight_max >= self.threshold:
-                    # Set SDG tag of publication to the SDG which has the maximum weight if its greater than the threshold value.
+                    # Set HA tag of publication to the HA which has the maximum weight if its greater than the threshold value.
                     row_df = pd.DataFrame([[doi, description, ha_max]], columns=results.columns)
                 else:
-                    # Set SDG tag of module to None if the maximum weight is less than the threshold value.
+                    # Set HA tag of module to None if the maximum weight is less than the threshold value.
                     row_df = pd.DataFrame([[doi, description, None]], columns=results.columns)
 
                 results = results.append(row_df, verify_integrity=True, ignore_index=True)
@@ -151,10 +151,10 @@ class HaSvmDataset():
 
     def run(self, modules: bool, publications: bool) -> None:
         """
-            Tags the modules and/or publications with their most related SDG, if related to one at all, and combines them into a single dataframe.
-            Serializes the resulting dataframe as a pickle file.
+            Tags the modules and/or publications with their most related HA, if related to one at all, and combines them into a single dataframe.
+            Serializes the resulting dataframe as a pickle file and csv file.
         """
-        df = pd.DataFrame() # column format of dataframe is {ID, Description, SDG} where ID is either Module_ID or DOI.
+        df = pd.DataFrame() # column format of dataframe is {ID, Description, HA} where ID is either Module_ID or DOI.
         if modules:
             df = df.append(self.tag_modules(), ignore_index=True)
         if publications:
@@ -162,3 +162,4 @@ class HaSvmDataset():
 
         df = df.reset_index()
         df.to_pickle(self.svm_dataset)
+        df.to_csv("main/NLP/SVM/datasetHA.csv")

@@ -9,7 +9,7 @@ from main.NLP.PREPROCESSING.preprocessor import Preprocessor
 
 class HaSvm(Svm):
     """
-        Concrete class to classify SDGs for modules and publications using the Svm model.
+        Concrete class to classify HAs for modules and publications using the Svm model.
     """
 
     def __init__(self):
@@ -54,8 +54,8 @@ class HaSvm(Svm):
 
     def print_predictions(self) -> None:
         """
-            Predicts SDG for each document description in the dataset, including those in the training set, test set
-            and those not in either (because the SDG tag is None).
+            Predicts HA for each document description in the dataset, including those in the training set, test set
+            and those not in either (because the HA tag is None).
         """
         X_description = self.dataset['Description'] # includes modules and publications that may contain a None tag.
         X_id = self.dataset['ID']
@@ -77,7 +77,7 @@ class HaSvm(Svm):
 
     def print_text_prediction(self, text) -> None:
         """
-            Predicts probabilities of SDGs given any random text input.
+            Predicts probabilities of HAs given any random text input.
         """
         text = Preprocessor().preprocess(text)
         y_pred = self.sgd_pipeline.predict_proba([text])
@@ -87,15 +87,15 @@ class HaSvm(Svm):
 
     def run(self) -> None:
         """
-            Trains the SVM model for clasifying SDGs using stochastic gradient descent.
+            Trains the SVM model for clasifying HAs using stochastic gradient descent.
         """
         ts = time.time()
         startTime = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
         
         svm_dataset = "main/NLP/SVM/datasetHA.csv"
-        tags = ['HA {}'.format(i) for i in range(1, 20)] # SDG tags.
+        tags = ['HA {}'.format(i) for i in range(1, 20)] # HA tags.
 
-        # SDG results files.
+        # HA results files.
         model = "main/NLP/SVM/HA_RESULTS/model.pkl"
         results = "main/NLP/SVM/HA_RESULTS/training_results.json"
 
