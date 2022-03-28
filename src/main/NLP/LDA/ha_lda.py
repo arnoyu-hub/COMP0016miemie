@@ -10,19 +10,19 @@ from main.MONGODB_PUSHERS.mongodb_pusher import MongoDbPusher
 
 class HaLda(Lda):
     """
-        Concrete class for mapping UCL modules to UN SDGs (United Nations Sustainable Development Goals) using Latent Dirichlet Allocation. 
-        The eta priors can be alterned to guide topic convergence given SDG-specific keywords.
+        Concrete class for mapping UCL modules to UN HAs (United Nations Sustainable Development Goals) using Latent Dirichlet Allocation. 
+        The eta priors can be alterned to guide topic convergence given HA-specific keywords.
     """
 
     def __init__(self):
         """
-            Initialize state of SdgLda with module-catalogue preprocessor, module data loader, module data, list of SDG-specific keywords, 
-            number of SDGs, text vectorizer and model.
+            Initialize state of HALda with module-catalogue preprocessor, module data loader, module data, list of HA-specific keywords, 
+            number of HAs, text vectorizer and model.
         """
         self.preprocessor = ModuleCataloguePreprocessor()
         self.loader = ModuleLoaderHA()
         self.data = None # module-catalogue dataframe with columns {ModuleID, Description}.
-        self.keywords = None # list of SDG-specific keywords.
+        self.keywords = None # list of HA-specific keywords.
         self.num_topics = 0
         self.vectorizer = self.get_vectorizer(1, 3, 1, 0.03)
         self.model = None
@@ -30,7 +30,7 @@ class HaLda(Lda):
     def create_eta(self, priors: dict, eta_dictionary: dict) -> np.ndarray:
         """
             Sets the eta hyperparameter as a skewed prior distribution over word weights in each topic.
-            SDG-specific keywords are given a greater value, aimed at guiding the topic convergence.
+            HA-specific keywords are given a greater value, aimed at guiding the topic convergence.
         """
         eta = np.full(shape=(self.num_topics, len(eta_dictionary)), fill_value=1) # topic-term matrix filled with the value 1.
         for keyword, topics in priors.items():
@@ -69,7 +69,7 @@ class HaLda(Lda):
 
     def display_topic_words(self, num_top_words: int) -> None:
         """
-            Prints the topic-word distribution with num_top_words words for each SDG.
+            Prints the topic-word distribution with num_top_words words for each HA.
         """
         for n in range(self.num_topics):
             print('HA {}: {}'.format(n + 1, [self.model.id2word[w] for w, p in self.model.get_topic_terms(n, topn=num_top_words)]))
@@ -88,21 +88,21 @@ class HaLda(Lda):
     
     def run(self) -> None:
         """
-            Initializes SdgLda parameters, trains the model and saves the results.
+            Initializes HALda parameters, trains the model and saves the results.
         """
         ts = time.time()
         startTime = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
 
         # Training parameters.
         num_modules = "MAX"
-        # SDG-specific keywords.
+        # HA-specific keywords.
         keywords = "main/HA_KEYWORDS/HA_Keywords.csv"
         passes = 10
         iterations = 400
         chunksize = 6000
         num_top_words = 20
 
-        # SDG results files.
+        # HA results files.
         pyldavis_html = "main/NLP/LDA/HA_RESULTS/pyldavis.html"
         tsne_clusters_html = "main/NLP/LDA/HA_RESULTS/tsne_clusters.html"
         model = "main/NLP/LDA/HA_RESULTS/model.pkl"

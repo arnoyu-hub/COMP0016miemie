@@ -202,7 +202,7 @@ class ScopusPrediction():
                 
     def make_predictions_HA(self, limit) -> None:
         """
-            Uses LDA trained on modules to classify publications in accordance with SDG's
+            Uses LDA trained on modules to classify publications in accordance with HA's
         """
         self.load_publications_HA()
 
