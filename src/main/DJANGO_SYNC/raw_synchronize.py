@@ -1,4 +1,5 @@
 from main.CONFIG_READER.read import get_details
+import pymysql
 import pymongo
 import psycopg2
 import pyodbc
@@ -40,7 +41,8 @@ class RawSynchronizer():
             Gets the list of all modules and their data from the MySQL database
         """
 
-        myConnection = pyodbc.connect('DRIVER=' + self.driver + ';SERVER=' + self.server + ';PORT=3306;DATABASE=' + self.database + ';UID=' + self.username + ';PWD=' + self.password)
+        #myConnection = pyodbc.connect('DRIVER=' + self.driver + ';SERVER=' + self.server + ';PORT=3306;DATABASE=' + self.database + ';UID=' + self.username + ';PWD=' + self.password)
+        myConnection = pymysql.connect(host="127.0.0.1", port=3306, db="miemie", user="root", password="UCLmiemie2021")
         curr = myConnection.cursor()
         curr.execute("SELECT * FROM moduledata")
         return curr.fetchall()
