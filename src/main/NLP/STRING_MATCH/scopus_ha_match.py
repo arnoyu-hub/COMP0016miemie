@@ -29,7 +29,7 @@ class ScopusStringMatch_HA():
     def __read_keywords(self, data: dict) -> None:
         """
             Given a set of publications in a dictionary, performs pre-processing for all string type data fields.
-            Performs look-up on SDG keyword occurences in a document.
+            Performs look-up on HA keyword occurences in a document.
             Results are pushed to MongoDB (backed-up in JSON file - scopus_matches.json).
         """
 
@@ -43,7 +43,7 @@ class ScopusStringMatch_HA():
             self.__progress(counter, num_publications, "processing scopus_matches.json")
             counter += 1
             description = self.preprocessor.tokenize(publication["Description"]) # visualise the progress on a commandline
-            ha_occurences = {} # accumulator for SDG Keywords found in a given document
+            ha_occurences = {} # accumulator for HA Keywords found in a given document
             for n in range(num_keywords):
                 ha_num = n + 1
                 ha = "HA " + str(ha_num) if ha_num < num_keywords else "Misc" # clean and process the string for documenting occurences
