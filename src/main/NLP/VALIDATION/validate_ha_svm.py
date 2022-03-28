@@ -17,12 +17,12 @@ class Dataset(enum.Enum):
 
 class ValidateHASvm():
     """
-        Performs SVM model validation for SDGs.
+        Performs SVM model validation for HAs.
     """
 
     def __init__(self):
         """
-            Initializes total number of SDGs, loader and MongoDB pusher.
+            Initializes total number of HAs, loader and MongoDB pusher.
         """
         self.num_has = 19
         self.loader = Loader()
@@ -34,7 +34,7 @@ class ValidateHASvm():
         """
         data = ModuleLoaderHA().load_string_matches_results()
         data = json.loads(json_util.dumps(data)) # process mongodb response to a workable dictionary format.
-        results = {}  # dictionary with Module_ID and SDG keyword counts.
+        results = {}  # dictionary with Module_ID and HA keyword counts.
         
         for module_id, module in data.items():
             ha_dict = module['Related_HA']
@@ -46,7 +46,7 @@ class ValidateHASvm():
                 count = len(word_found_dict['Word_Found'])
                 counts[ha_num - 1] = count
             
-            results[module_id] = counts # add Module_ID with array of SDG keyword counts to results.
+            results[module_id] = counts # add Module_ID with array of HA keyword counts to results.
 
         return results
 
@@ -56,7 +56,7 @@ class ValidateHASvm():
         """
         data = PublicationLoaderHA().load_string_matches_results()
         data = json.loads(json_util.dumps(data)) # process mongodb response to a workable dictionary format.
-        results = {} # dictionary with DOI and SDG keyword counts.
+        results = {} # dictionary with DOI and HA keyword counts.
 
         for doi in data:
             ha_dict = data[doi]['Related_HA']
@@ -68,7 +68,7 @@ class ValidateHASvm():
                 count = len(word_found_dict['Word_Found'])
                 counts[ha_num - 1] = count
             
-            results[doi] = counts # add DOI with array of SDG keyword counts to results.
+            results[doi] = counts # add DOI with array of HA keyword counts to results.
 
         return results
 
@@ -99,7 +99,7 @@ class ValidateHASvm():
         results = {}
 
         for key in model_data:
-            vec_A = np.array(model_data[key]) # probability distribution of SVM model for SDGs.
+            vec_A = np.array(model_data[key]) # probability distribution of SVM model for HAs.
             original_counts = count_data[key]
             counts = original_counts.copy()
             
@@ -107,9 +107,9 @@ class ValidateHASvm():
                 if counts[i] == 0:
                     counts[i] = e
             counts_sum_inv = 1.0 / sum(counts)
-            vec_B = np.array(counts) * counts_sum_inv # probability predicted by counting keyword occurances for each SDG.
+            vec_B = np.array(counts) * counts_sum_inv # probability predicted by counting keyword occurances for each HA.
 
-            # Populate validation dictionary with Module_ID, Similarity and SDG keyword counts.
+            # Populate validation dictionary with Module_ID, Similarity and HA keyword counts.
             validation_dict = {}
             validation_dict["Similarity"] = self.compute_similarity(vec_A, vec_B)
             validation_dict["HA_Keyword_Counts"] = original_counts
