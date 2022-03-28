@@ -2,6 +2,7 @@ import pymongo
 import json
 import ssl
 import os
+import pymysql
 import pandas as pd
 import pickle
 import pyodbc
@@ -34,8 +35,8 @@ class ModuleLoaderHA(Loader):
             Returns either all modules, or if specified, a number of modules
         """
         # CONNECT TO THE DATABASE
-        myConnection = pyodbc.connect('DRIVER=' + self.driver + ';SERVER=' + self.server + ';PORT=3306;DATABASE=' + self.database + ';UID=' + self.username + ';PWD=' + self.password)
-
+        #myConnection = pyodbc.connect('DRIVER=' + self.driver + ';SERVER=' + self.server + 'PORT=3306;DATABASE=' + self.database + ';UID=' + self.username + ';PWD=' + self.password)
+        myConnection = pymysql.connect(host="127.0.0.1", port=3306, db="miemie", user="root", password="UCLmiemie2021")
         if num_modules == "MAX":
             # Load all modules.
             df = pd.read_sql_query( "SELECT Module_Name, Module_ID, Module_Description FROM moduledata", myConnection)
@@ -60,7 +61,7 @@ class ModuleLoaderHA(Loader):
 
     def load_lda_prediction_results(self):
         """
-            Loads module SDG predictions for LDA from a serialised json file, if it exists, otherwise from MongoDB.
+            Loads module HA predictions for LDA from a serialised json file, if it exists, otherwise from MongoDB.
         """
         if os.path.exists("main/NLP/LDA/HA_RESULTS/training_results.json"):
             with open("main/NLP/LDA/HA_RESULTS/training_results.json") as json_file:
@@ -76,7 +77,7 @@ class ModuleLoaderHA(Loader):
 
     def load_string_matches_results(self):
         """
-            Loads module SDG keyword string matching results from a serialised file, if it exists, otherwise from MongoDB.
+            Loads module HA keyword string matching results from a serialised file, if it exists, otherwise from MongoDB.
         """
         if os.path.exists(self.string_matches_path):
             with open(self.string_matches_path) as json_file:

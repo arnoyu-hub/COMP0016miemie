@@ -70,7 +70,7 @@ class PublicationLoaderHA(Loader):
 
     def load_lda_prediction_results(self):
         """
-            Loads publication SDG predictions for LDA from a serialised json file, if it exists, otherwise from MongoDB.
+            Loads publication HA predictions for LDA from a serialised json file, if it exists, otherwise from MongoDB.
         """
         if os.path.exists(self.lda_prediction_path_ha_scopus):
             with open(self.lda_prediction_path_ha_scopus) as json_file:
@@ -86,7 +86,7 @@ class PublicationLoaderHA(Loader):
 
     def load_string_matches_results(self):
         """
-            Loads publication SDG keyword string matching results from a serialised file, if it exists, otherwise from MongoDB.
+            Loads publication HA keyword string matching results from a serialised file, if it exists, otherwise from MongoDB.
         """
         if os.path.exists(self.string_matches_path):
             with open(self.string_matches_path) as json_file:

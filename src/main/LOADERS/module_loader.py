@@ -105,6 +105,7 @@ import pandas as pd
 import pickle
 import pyodbc
 from typing import Optional, Union
+import pymysql
 
 from main.CONFIG_READER.read import get_details
 from main.LOADERS.loader import Loader
@@ -133,8 +134,9 @@ class ModuleLoader(Loader):
             Returns either all modules, or if specified, a number of modules
         """
         # CONNECT TO THE DATABASE
-        myConnection = pyodbc.connect('DRIVER=' + self.driver + ';SERVER=' + self.server + ';PORT=3306;DATABASE=' + self.database + ';UID=' + self.username + ';PWD=' + self.password)
+        #myConnection = pyodbc.connect('DRIVER=' + self.driver + ';SERVER=' + self.server + ';PORT=3306;DATABASE=' + self.database + ';UID=' + self.username + ';PWD=' + self.password)
 
+        myConnection = pymysql.connect(host="127.0.0.1", port=3306, db="miemie", user="root", password="UCLmiemie2021")
         if num_modules == "MAX":
             # Load all modules.
             df = pd.read_sql_query( "SELECT Module_Name, Module_ID, Module_Description FROM moduledata", myConnection)
