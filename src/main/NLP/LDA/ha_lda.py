@@ -10,7 +10,7 @@ from main.MONGODB_PUSHERS.mongodb_pusher import MongoDbPusher
 
 class HaLda(Lda):
     """
-        Concrete class for mapping UCL modules to UN HAs (United Nations Sustainable Development Goals) using Latent Dirichlet Allocation. 
+        Concrete class for mapping UCL modules to HAs using Latent Dirichlet Allocation. 
         The eta priors can be alterned to guide topic convergence given HA-specific keywords.
     """
 
