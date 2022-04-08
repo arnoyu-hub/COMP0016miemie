@@ -411,11 +411,12 @@ class Lda():
         """
         logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
         # map description to a document-count matrix.
+        COUNT = 0
         try:
            X = self.vectorizer.fit_transform(self.data['Module_Description'])
         except KeyError as e:
-            pass
-        if (e):
+            COUNT += 1
+        if (COUNT == 1):
             X = self.vectorizer.fit_transform(self.data['Description'])
         corpus = gensim.matutils.Sparse2Corpus(X, documents_columns=False) # transform sparse matrix as a gensim corpus. 
         id2word = dict((v, k) for k, v in self.vectorizer.vocabulary_.items())
